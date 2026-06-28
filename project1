@@ -1419,32 +1419,33 @@ function clearCurrentNote() {
     }
 
     function renderQuickResponsesDashboard() {
-      const deckContainer = document.getElementById('quick-response-cards-node');
-      if (!deckContainer) return;
-      deckContainer.innerHTML = '';
-      const filtered = quickResponsesList.filter(item => {
-        if (activeQRFilterCategory === 'all') return true;
-        if (activeQRFilterCategory === 'favs') return item.favorite === true;
-        return item.category === activeQRFilterCategory;
-      });
-      if (!filtered.length) {
-        deckContainer.innerHTML = '<p style="color:var(--text-muted); font-size:12px; margin: 20px auto; font-style: italic;">No macro pills inside this category.</p>'; return;
-      }
-      filtered.forEach(item => {
-        const card = document.createElement('div'); card.className = 'qr-deck-card';
-        card.innerHTML = `
-          <div class="qr-deck-left-group">
-            <span class="material-icons-round btn-copy-macro-inline" title="Copy text" onclick="executeQuickResponseCopy('${item.id}', event)">content_copy</span>
-            <div class="qr-deck-body">${item.text}</div>
-          </div>
-          <div class="qr-deck-actions">
-            <span class="material-icons-round qr-action-icon-btn ${item.favorite ? 'active' : ''}" title="Favorite" onclick="toggleQuickResponseFav('${item.id}', event)">${item.favorite ? 'star' : 'star_border'}</span>
-            <span class="material-icons-round qr-action-icon-btn delete-icon" title="Delete" onclick="deleteQuickResponse('${item.id}', event)">delete</span>
-          </div>
-        `;
-        deckContainer.appendChild(card);
-      });
-    }
+    const sidebarContainer = document.getElementById('quick-response-cards-node');
+    const footerContainer = document.getElementById('preset-qr-footer');
+
+    // 1. Clear both containers
+    if (sidebarContainer) sidebarContainer.innerHTML = '';
+    if (footerContainer) footerContainer.innerHTML = '';
+
+    // 2. Iterate and sort
+    quickResponsesList.forEach(qr => {
+        // Build the card HTML
+        const cardHTML = `
+            <div class="qr-deck-card" onclick="executeTextInjection(\`${qr.text.replace(/'/g, "\\'")}\`)">
+                <div style="font-weight:700; font-size:11px; margin-bottom:4px; color:var(--neon-orange)">${qr.text.split('-')[0]}</div>
+                <div style="font-size:10px; color:var(--text-muted);">${qr.text.substring(0, 60)}...</div>
+            </div>`;
+
+        // 3. Conditional Routing
+        // Assuming "Ticket Summary" and "Work Notes" should be in the footer
+        const isFooterCategory = (qr.category === "Ticket Summary" || qr.category === "Work Notes");
+
+        if (isFooterCategory && footerContainer) {
+            footerContainer.insertAdjacentHTML('beforeend', cardHTML);
+        } else if (sidebarContainer) {
+            sidebarContainer.insertAdjacentHTML('beforeend', cardHTML);
+        }
+    });
+}
 
     function setQuickResponseCategory(categoryKey) {
       activeQRFilterCategory = categoryKey;
