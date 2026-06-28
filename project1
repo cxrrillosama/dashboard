@@ -72,7 +72,26 @@
   word-break: break-word;
   font-weight: 400; /* This forces EVERYTHING inside to have a normal weight */
 }
-    
+    /* NEW: Preset Quick Response Footer Styles */
+.preset-qr-bottom-bar {
+  height: 120px;
+  background: var(--bg-deep-gray);
+  border-top: 1px solid var(--border-dark);
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  gap: 12px;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+/* Ensure the cards in the footer sit side-by-side */
+.preset-qr-bottom-bar .qr-deck-card {
+  width: 250px;
+  min-width: 250px;
+  flex-shrink: 0;
+  height: 100%;
+}
     .delete-note-icon { color: var(--text-muted); cursor: pointer; padding: 2px; border-radius: 4px; transition: var(--transition-smooth); }
     .delete-note-icon:hover { color: #ff4444; background: rgba(255,68,68,0.1); }
     
@@ -353,7 +372,9 @@
           </div>
         </div>
       </div>
-
+</div> 
+  <div id="preset-qr-footer" class="preset-qr-bottom-bar">
+      </div>
       <div id="footer-resizer-handle" class="resizer-v"></div>
 
      <div class="quick-resp-footer" id="quick-resp-footer">
@@ -1509,7 +1530,37 @@ function clearCurrentNote() {
         input.placeholder = "Create Master Password"; btn.innerText = "Initialize Vault"; if(resumeBtn) resumeBtn.classList.add('hidden');
       } else { inst.innerText = "Encrypted local utility."; input.placeholder = "Enter Master Password"; btn.innerText = "Unlock Vault"; }
     }
+function renderQuickResponses(filterCategory = 'all') {
+    // 1. Grab both containers
+    const rightColumnNode = document.getElementById('quick-response-cards-node');
+    const bottomFooterNode = document.getElementById('preset-qr-footer');
 
+    // 2. Clear out old rendering
+    rightColumnNode.innerHTML = '';
+    bottomFooterNode.innerHTML = '';
+
+    // 3. Loop through your global quickResponsesList
+    quickResponsesList.forEach(qr => {
+        
+        // Optional: Apply your existing filter logic here
+        if (filterCategory !== 'all' && qr.category !== filterCategory) return;
+
+        // 4. Build your card HTML (Use your existing card HTML structure here)
+        const cardHTML = `
+            <div class="qr-deck-card">
+                <div class="qr-deck-body">${qr.text}</div>
+            </div>
+        `;
+
+        // 5. Route the card based on whether it is custom or a preset
+        // (Adjust the condition below based on how your data structure flags custom vs presets)
+        if (qr.isCustom === true || qr.folder === 'Custom') {
+            rightColumnNode.insertAdjacentHTML('beforeend', cardHTML);
+        } else {
+            bottomFooterNode.insertAdjacentHTML('beforeend', cardHTML);
+        }
+    });
+}
     function handleGateAction() {
       const inputPass = document.getElementById('master-password').value;
       const storedMaster = localStorage.getItem('vaultMasterPassword');
